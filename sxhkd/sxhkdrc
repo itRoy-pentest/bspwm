@@ -1,81 +1,101 @@
-#
-# wm independent hotkeys
-#
+######################
+###     TERMINAL   ###
+######################
 
-# terminal emulator
+# open the kitty
 alt + Return
 	kitty
 
-# program launcher
-alt + d
-	dmenu_run
+# open the rofi
+alt + r
+	QT_QPA_PLATFORM=xcb rofi -show drun
 
-# make sxhkd reload its configuration files:
-alt + Escape
-	pkill -USR1 -x sxhkd
+# close the window
+alt + c
+	bspc node -c
 
-#
-# bspwm hotkeys
-#
+# open the thunar
+alt + e
+	thunar
+# chromium
+alt + b
+	chromium
 
-# quit/restart bspwm ?
-alt + {q,r}
-	bspc {quit,wm -r}
+# telegram
+alt + t
+	QT_QPA_PLATFORM=xcb Telegram
 
-# close and kill
-alt + {_,shift + }w
-	bspc node -{c,k}
+Print
+	QT_QPA_PLATFORM=xcb flameshot gui --raw | xclip -selection clipboard -t image/png
 
-# alternate between the tiled and monocle layout
-alt + m
-	bspc desktop -l next
+super + Print
+	QT_QPA_PLATFORM=xcb flameshot full -c
 
-# send the newest marked node to the newest preselected node
-alt + y
-	bspc node newest.marked.local -n newest.!automatic.local
+###########################
+###      BSPWM/SXHKD    ###
+###########################
 
-# swap the current node and the biggest window
+# win + space language
+super + space
+	setxkbmap -query | grep -q 'layout:.*us' && setxkbmap ru || setxkbmap us
+
+# quit bspwm
+alt + shift + q
+	bspc quit
+
+# restart bspwm
+alt + shift + b
+	bspc wm -r
+
+# restart sxhkd
+alt + shift + s
+	pkill -USR1 -x sxhkd && notify-send "sxhkd" "Config reloaded"
+
+# swap the current window from the biggest window
 alt + g
 	bspc node -s biggest.window
 
-#
-# state/flags
-#
+################################
+###      SET WINDOW STATE    ###
+################################
 
 # set the window state
-alt + {shift + t,s,f}
-	bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+alt + {shift + t,f}
+	bspc node -t {tiled, floating}
 
+# set only tiled state
 alt + ctrl + t
-    bspc node -t tiled
+	bspc node -t tiled
 
-# set the node flags
-alt + ctrl + {m,x,y,z}
-	bspc node -g {marked,locked,sticky,private}
 
-#
-# focus/swap
-#
+#################################
+###	MODIFYING WINDOWS     ###
+#################################
 
-# focus the node in the given direction
-alt + {_,shift + }{h,j,k,l}
-	bspc node -{f,s} {west,south,north,east}
+### RESIZE ###
 
-# focus the node for the given path jump
-alt + {p,shift + b,comma,period}
-	bspc node -f @{parent,brother,first,second}
+# resize tiled windows
+super + ctrl + {Left,Down,Up,Right}
+	{bspc node -z left -20 0; bspc node -z right -20 0, \
+	bspc node -z bottom 0 20; bspc node -z top 0 20, \
+	bspc node -z bottom 0 -20; bspc node -z top 0 -20, \ 
+	bspc node -z left 20 0; bspc node -z right 20 0}
 
-# focus the next/previous window in the current desktop
-alt + {_,shift + }c
-	bspc node -f {next,prev}.local.!hidden.window
+# resize floating windows
+alt + ctrl + {Left,Down,Up,Right}
+	{bspc node -z right -20 20, \
+	bspc node -z bottom 20 20, \
+	bspc node -z bottom 20 -20, \
+	bspc node -z right 20 20}
 
-# focus the next/previous desktop in the current monitor
-alt + bracket{left,right}
-	bspc desktop -f {prev,next}.local
+### MOVED WINDOWS ###
 
-# focus the last node/desktop
-alt + {grave,Tab}
-	bspc {node,desktop} -f last
+alt + {Left,Down,Up,Right}
+	bspc node -f {west,south,north,east}
+
+alt + shift + {Left,Down,Up,Right}
+	bspc node -s {west,south,north,east}
+
 
 # focus the older or newer node in the focus history
 alt + {o,i}
@@ -87,61 +107,24 @@ alt + {o,i}
 alt + {_,shift + }{1-9,0}
 	bspc {desktop -f,node -d} '^{1-9,10}'
 
-#
-# preselect
-#
 
-# preselect the direction
-alt + ctrl + {h,j,k,l}
-	bspc node -p {west,south,north,east}
+###################
+###	SOUND	###
+###################
 
-# preselect the ratio
-alt + ctrl + {1-9}
-	bspc node -o 0.{1-9}
+XF86AudioRaiseVolume
+	wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
 
-# cancel the preselection for the focused node
-alt + ctrl + space
-	bspc node -p cancel
+XF86AudioLowerVolume
+	wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 
-# cancel the preselection for the focused desktop
-alt + ctrl + shift + space
-	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+XF86AudioMute
+	wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
-#
-# move/resize
-#
+XF86MonBrightnessUp
+	brightnessctl set +20%
 
-# expand a window by moving one of its side outward
-alt + super + {h,j,k,l}
-	bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
-
-# contract a window by moving one of its side inward
-alt + super + shift + {h,j,k,l}
-	bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
-
-# move a floating window
-alt + {Left,Down,Up,Right}
-	bspc node -v {-20 0,0 20,0 -20,20 0}
-
-# my custom hotkey
-#
-# chromium
-alt + b
-	chromium
-
-# telegram
-alt + t
-	telegram-desktop
-
-# win + space language
-super + space
-    setxkbmap -query | grep -q 'layout:.*us' && setxkbmap ru || setxkbmap us
-
-Print
-    flameshot gui --raw | xclip -selection clipboard -t image/png
-super + Print
-    flameshot full -c
-
-
+XF86MonBrightnessDown
+	brightnessctl set 20%-
 
 
